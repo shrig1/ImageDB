@@ -2,7 +2,7 @@ import tkinter as tk
 
 
 
-def initWindow():
+def initSignInWindow():
     signIn = tk.Tk("ImageDB")
     signIn.geometry("1000x700")
     signIn.state('zoomed')
@@ -35,4 +35,4 @@ def initWindow():
     signIn.mainloop()
 
 
-initWindow()
+initSignInWindow()
