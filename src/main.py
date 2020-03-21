@@ -1,16 +1,22 @@
 import pymysql as sql
-import bcrypt 
+import bcrypt as bc
 import tkinter as tk
-import base64 
+import datetime as dt
+import base64 as b64 
+from tkinter import IntVar
+import tkMessageBox as tkMB
+
 
 database = "imagedb"
-creds = open("C:\\Users\Administrator\Desktop\ImageDB\secret\SqlServerUsrPass.txt", "r")
-print(creds)
+creds = open("secret\SqlServerUsrPass.txt", "r").readlines()
+server_username = b64.b64decode(creds[0]).decode("utf-8")
+server_password = b64.b64decode(creds[1]).decode("utf-8")
 
-imagedb = sql.connect("imagecollageapcsp.mysql.database.azure.com", "theLordAndSavior@imagecollageapcsp", "MyNameJeff69420", database)
+imagedb = sql.connect("imagecollageapcsp.mysql.database.azure.com", server_username[:-1] + "@imagecollageapcsp", server_password, database)
 
 cursor = imagedb.cursor()
 
+# All my functions
 def goToSignInScreen():
     create.withdraw()
     signIn.iconify()
@@ -24,12 +30,23 @@ def goToCreateAccountScreen():
 
 def initSignInWindow():
     signIn.mainloop()
+    
 
 def initCreateAccountWindow():
     create.mainloop()
 
+    
 def createAccount():
-    cursor.execute("INSERT imagedb FROM users WHERE username =%s'", (createUserNameInput.get(), ))
+    username = createUserNameInput.get()
+    password = createPassWordInput.get()
+    salt = bc.gensalt()
+    dateOfCreation = str(dt.datetime.now())
+    adult = adultcheck.get()
+    if(username != "" or password != ""):
+        cursor.execute("INSERT INTO users VALUES(%s, %s, %s, %d)", (username, bc.hashpw(password, salt), dateOfCreation, adult))
+    else: 
+        tkMB.showerror("Error!", "You are missing some info")
+
 
 
 # Sign In window declerations
@@ -84,13 +101,19 @@ createPassWordInput = tk.Entry(create, bd = 5, show = "*")
 createPassWordInput.pack()
 createPassWordInput.place(height = 40, width = 200 ,x = 650, y = 380)
 
-createLogInBtn = tk.Button(create, text = "Create Account and Logon")
+adultcheck = IntVar()
+adultCheck = tk.Checkbutton(text = "Are you older than 18? Check the box if yes", variable = adultcheck)
+adultCheck.pack()
+adultCheck.place(height = 30, width = 250, x = 650, y = 410)
+
+createLogInBtn = tk.Button(create, text = "Create Account and Logon", command = createAccount)
 createLogInBtn.pack()
-createLogInBtn.place(height = 30, width = 200, x = 650, y = 430)
+createLogInBtn.place(height = 30, width = 200, x = 650, y = 450)
 
 exitBtn = tk.Button(create, text = "Exit to Sign In screen", command = goToSignInScreen)
 exitBtn.pack()
-exitBtn.place(height = 30, width = 200, x = 650, y = 460)
+exitBtn.place(height = 30, width = 200, x = 650, y = 480)
+
 
 
 
